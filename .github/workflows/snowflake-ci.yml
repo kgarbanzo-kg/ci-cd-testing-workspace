@@ -1,0 +1,71 @@
+name: Snowflake Object CI
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'snowflake/**'
+      - '.sqlfluff'
+      - '.github/workflows/snowflake-ci.yml'
+
+concurrency:
+  group: snowflake-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    environment: ci
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ vars.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: SVC_GITHUB_INFRA_CI
+      SNOWFLAKE_ROLE: CICD_INFRA_ROLE
+      SNOWFLAKE_WAREHOUSE: CICD_WH
+      TARGET_RAW_DB: RAW_PROD
+      CHANGE_HISTORY_DB: METADATA_DB
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Instalar SQLFluff y schemachange
+        run: pip install sqlfluff "schemachange>=4.0,<5.0"
+
+      - name: Validar sintaxis SQL (Snowflake dialect)
+        run: sqlfluff parse snowflake/migrations/
+
+      - name: Autenticar en Snowflake via OIDC
+        uses: snowflakedb/snowflake-actions@v3
+        with:
+          use-oidc: true
+          cli-version: "3.16"
+
+      - name: Crear archivo OIDC y connections.toml
+        run: |
+          mkdir -p ~/.snowflake
+          printf "%s" "${SNOWFLAKE_TOKEN}" > ~/.snowflake/oidc_token.txt
+          chmod 600 ~/.snowflake/oidc_token.txt
+          cat <<EOF > ~/.snowflake/connections.toml
+          [default]
+          account = "${SNOWFLAKE_ACCOUNT}"
+          user = "${SNOWFLAKE_USER}"
+          role = "${SNOWFLAKE_ROLE}"
+          warehouse = "${SNOWFLAKE_WAREHOUSE}"
+          authenticator = "WORKLOAD_IDENTITY"
+          token_file_path = "/home/runner/.snowflake/oidc_token.txt"
+          EOF
+          chmod 600 ~/.snowflake/connections.toml
+
+      - name: Validar versionado y plan con schemachange (--dry-run)
+        run: |
+          schemachange deploy \
+            --config-folder snowflake \
+            --connections-file-path ~/.snowflake/connections.toml \
+            --connection-name default \
+            --dry-run \
+            -L INFO
