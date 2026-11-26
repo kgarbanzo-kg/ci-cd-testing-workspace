@@ -24,40 +24,25 @@ jobs:
       SNOWFLAKE_USER: SVC_GITHUB_INFRA_PROD
       SNOWFLAKE_ROLE: CICD_INFRA_ROLE
       SNOWFLAKE_WAREHOUSE: CICD_WH
-      TARGET_RAW_DB: RAW_PROD
-      CHANGE_HISTORY_DB: METADATA_DB
+      TARGET_RAW_DB: ${{ vars.SNOWFLAKE_RAW_DB }}
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
-      - uses: snowflakedb/snowflake-actions@v3
+      - name: Instalar gettext (envsubst)
+        run: sudo apt-get update && sudo apt-get install -y gettext-base
+
+      - name: Autenticar en Snowflake via OIDC
+        uses: snowflakedb/snowflake-actions@v3
         with:
           use-oidc: true
           cli-version: "3.16"
 
-      - run: pip install "schemachange>=4.0,<5.0"
-
-      - name: Crear archivo OIDC y connections.toml
+      - name: Aplicar scripts SQL idempotentes en Snowflake
         run: |
-          mkdir -p ~/.snowflake
-          printf "%s" "${SNOWFLAKE_TOKEN}" > ~/.snowflake/oidc_token.txt
-          chmod 600 ~/.snowflake/oidc_token.txt
-          cat <<EOF > ~/.snowflake/connections.toml
-          [default]
-          account = "${SNOWFLAKE_ACCOUNT}"
-          user = "${SNOWFLAKE_USER}"
-          role = "${SNOWFLAKE_ROLE}"
-          warehouse = "${SNOWFLAKE_WAREHOUSE}"
-          authenticator = "WORKLOAD_IDENTITY"
-          token_file_path = "/home/runner/.snowflake/oidc_token.txt"
-          EOF
-          chmod 600 ~/.snowflake/connections.toml
-
-      - name: Ejecutar migraciones reales en Snowflake
-        run: |
-          schemachange deploy \
-            --config-folder snowflake \
-            --connections-file-path ~/.snowflake/connections.toml \
-            --connection-name default \
-            -L INFO
+          for f in snowflake/migrations/*.sql; do
+            echo "Aplicando $f en ${TARGET_RAW_DB}..."
+            envsubst '${TARGET_RAW_DB}' < "$f" > /tmp/rendered.sql
+            snow sql -x -f /tmp/rendered.sql
+          done
