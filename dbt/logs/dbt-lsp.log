@@ -79,3 +79,39 @@ Finished 'compile' with 1 error [3ms]
 20:38:33.019836 [info ]: Loading profiles.yml
 20:38:40.308151 [info ]: Loading profiles.yml
 20:38:41.331673 [info ]: Loading profiles.yml
+20:38:50.327163 [info ]: Loading profiles.yml
+20:38:51.126007 [info ]: Loading profiles.yml
+20:38:54.032711 [info ]: Loading profiles.yml
+20:38:55.215329 [info ]: Loading profiles.yml
+20:39:02.319022 [info ]: Loading profiles.yml
+20:39:03.361447 [info ]: Loading profiles.yml
+==================== 2026-11-26T20:41:51.453012Z | 7da34e31-56dd-41c7-a65f-974f19f0bed5 ====================
+20:41:51.453077 [info ]: Started loading project
+20:41:51.457326 [info ]: Loading profiles.yml
+20:41:51.462490 [info ]: Finished loading project [  0.01s]
+20:41:51.463064 [error]: [SerializationError (dbt1013)]: YAML error: did not find expected key at line 27 column 52, while parsing a block mapping at line 17 column 7
+  --> profiles.yml:27:52
+20:41:51.463253 [info ]: 
+==================== Execution Summary =====================
+Finished 'compile' with 1 error [10ms]
+20:41:52.885606 [info ]: Loading profiles.yml
+==================== 2026-11-26T20:41:53.999605Z | 7c5ad29b-8e79-48d9-a167-65852ade90d1 ====================
+20:41:53.999662 [info ]: Started loading project
+20:41:54.001125 [info ]: Loading profiles.yml
+20:41:54.006503 [error]: [InvalidConfig (dbt1005)]: Jinja render error: invalid operation: 'env_var': environment variable 'SNOWFLAKE_ACCOUNT' not found
+(in :1:1)
+20:41:54.006520 [info ]: Finished loading project [  0.01s]
+20:41:54.006551 [info ]: 
+==================== Execution Summary =====================
+Finished 'compile' with 1 error [6ms]
+20:41:54.971806 [info ]: Loading profiles.yml
+==================== 2026-11-26T20:41:55.452643Z | 78501960-332b-48f4-9121-7a42e2865562 ====================
+20:41:55.452699 [info ]: Started loading project
+20:41:55.454930 [info ]: Loading profiles.yml
+20:41:55.457321 [error]: [InvalidConfig (dbt1005)]: Jinja render error: invalid operation: 'env_var': environment variable 'SNOWFLAKE_ACCOUNT' not found
+(in :1:1)
+20:41:55.457352 [info ]: Finished loading project [  0.00s]
+20:41:55.457363 [info ]: 
+==================== Execution Summary =====================
+Finished 'compile' with 1 error [4ms]
+20:41:56.057025 [info ]: Loading profiles.yml

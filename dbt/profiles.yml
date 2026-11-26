@@ -11,6 +11,7 @@ snowflake_dbt:
       schema: "{{ env_var('DBT_CI_SCHEMA', 'STAGING_CI') }}"
       threads: 4
       authenticator: "{{ env_var('SNOWFLAKE_AUTHENTICATOR', 'WORKLOAD_IDENTITY') }}"
+      workload_identity_provider: "{{ env_var('SNOWFLAKE_WORKLOAD_IDENTITY_PROVIDER', 'OIDC') }}"
       token: "{{ env_var('SNOWFLAKE_TOKEN', '') }}"
     prod:
       type: snowflake
@@ -22,4 +23,5 @@ snowflake_dbt:
       schema: "{{ env_var('DBT_PROD_SCHEMA', 'STAGING') }}"
       threads: 4
       authenticator: "{{ env_var('SNOWFLAKE_AUTHENTICATOR', 'WORKLOAD_IDENTITY') }}"
+      workload_identity_provider: "{{ env_var('SNOWFLAKE_WORKLOAD_IDENTITY_PROVIDER', 'OIDC') }}"
       token: "{{ env_var('SNOWFLAKE_TOKEN', '') }}"
