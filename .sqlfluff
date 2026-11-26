@@ -1,0 +1,7 @@
+[sqlfluff]
+dialect = snowflake
+templater = jinja
+rules = none
+
+[sqlfluff:templater:jinja:context]
+raw_db = RAW_PROD
