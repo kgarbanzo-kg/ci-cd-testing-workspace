@@ -1,0 +1,59 @@
+name: dbt CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dbt/**'
+      - '.github/workflows/dbt-cd.yml'
+
+concurrency:
+  group: dbt-cd-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-prod:
+    runs-on: ubuntu-latest
+    environment: prod
+    defaults:
+      run:
+        working-directory: dbt
+    env:
+      DBT_PROFILES_DIR: .
+      DBT_TARGET: prod
+      SNOWFLAKE_ACCOUNT: ${{ vars.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: SVC_GITHUB_INFRA_PROD
+      DBT_ROLE: ${{ vars.DBT_ROLE }}
+      SNOWFLAKE_WAREHOUSE: ${{ vars.DBT_WAREHOUSE }}
+      DBT_TARGET_DB: ${{ vars.DBT_TARGET_DB }}
+      DBT_PROD_SCHEMA: STAGING
+      TARGET_RAW_DB: ${{ vars.SNOWFLAKE_RAW_DB }}
+      SNOWFLAKE_AUTHENTICATOR: WORKLOAD_IDENTITY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Configurar Python y dbt-snowflake
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dbt-snowflake
+        run: pip install dbt-snowflake
+
+      - name: Autenticar en Snowflake via OIDC
+        uses: snowflakedb/snowflake-actions@v3
+        with:
+          use-oidc: true
+          cli-version: "3.16"
+
+      - name: Construir modelos en producción
+        run: |
+          export SNOWFLAKE_TOKEN="${SNOWFLAKE_TOKEN}"
+          dbt debug
+          dbt build --target prod
