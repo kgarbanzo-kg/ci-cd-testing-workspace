@@ -1,0 +1,6 @@
+config-version: 1
+root-folder: 'snowflake/migrations'
+change-history-table: '{{ env_var("CHANGE_HISTORY_DB", "METADATA_DB") }}.SCHEMACHANGE.CHANGE_HISTORY'
+create-change-history-table: true
+vars:
+  raw_db: '{{ env_var("TARGET_RAW_DB") }}'

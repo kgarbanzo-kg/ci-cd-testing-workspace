@@ -1,0 +1,106 @@
+name: Snowflake Object CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, closed]
+    paths:
+      - 'snowflake/**'
+      - '.github/workflows/snowflake-cicd.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'snowflake/**'
+      - '.github/workflows/snowflake-cicd.yml'
+
+concurrency:
+  group: snowflake-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  ci-validate:
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    environment: ci
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ vars.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: SVC_GITHUB_INFRA_CI
+      SNOWFLAKE_ROLE: CICD_INFRA_ROLE
+      SNOWFLAKE_WAREHOUSE: CICD_WH
+      TARGET_RAW_DB: RAW_PR_${{ github.event.number }}
+      CHANGE_HISTORY_DB: METADATA_PR_${{ github.event.number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: snowflakedb/snowflake-actions@v3
+        with:
+          use-oidc: true
+          cli-version: "3.16"
+      - run: pip install "schemachange>=4.0,<5.0"
+      - name: Clone Prod Databases for Isolated PR Validation
+        run: |
+          snow sql -x -q "
+            CREATE OR REPLACE TRANSIENT DATABASE ${TARGET_RAW_DB} CLONE RAW_PROD;
+            CREATE OR REPLACE TRANSIENT DATABASE ${CHANGE_HISTORY_DB} CLONE METADATA_DB;
+          "
+      - name: Run schemachange against PR Clone
+        run: |
+          schemachange deploy \
+            --config-folder snowflake \
+            --connections-file-path ~/.snowflake/connections.toml \
+            --connection-name default \
+            --verbose
+
+  ci-cleanup:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    environment: ci
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ vars.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: SVC_GITHUB_INFRA_CI
+      SNOWFLAKE_ROLE: CICD_INFRA_ROLE
+      SNOWFLAKE_WAREHOUSE: CICD_WH
+    steps:
+      - uses: snowflakedb/snowflake-actions@v3
+        with:
+          use-oidc: true
+          cli-version: "3.16"
+      - name: Drop Ephemeral PR Clones
+        run: |
+          snow sql -x -q "
+            DROP DATABASE IF EXISTS RAW_PR_${{ github.event.number }};
+            DROP DATABASE IF EXISTS METADATA_PR_${{ github.event.number }};
+          "
+
+  cd-deploy-prod:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ vars.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: SVC_GITHUB_INFRA_PROD
+      SNOWFLAKE_ROLE: CICD_INFRA_ROLE
+      SNOWFLAKE_WAREHOUSE: CICD_WH
+      TARGET_RAW_DB: RAW_PROD
+      CHANGE_HISTORY_DB: METADATA_DB
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: snowflakedb/snowflake-actions@v3
+        with:
+          use-oidc: true
+          cli-version: "3.16"
+      - run: pip install "schemachange>=4.0,<5.0"
+      - name: Deploy Migrations to Production
+        run: |
+          schemachange deploy \
+            --config-folder snowflake \
+            --connections-file-path ~/.snowflake/connections.toml \
+            --connection-name default \
+            --verbose
