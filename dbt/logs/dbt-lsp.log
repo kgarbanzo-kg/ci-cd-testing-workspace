@@ -1,0 +1,124 @@
+==================== 2026-11-26T20:30:25.588663Z | 00000000-0000-0000-0000-000000000000 ====================
+==================== 2026-11-26T20:30:25.592747Z | 8b376cdd-5c08-43d5-b156-7ce5fe6edf00 ====================
+20:30:25.593259 [info ]: Starting dbt LSP server
+20:30:25.593559 [info ]: Connecting to LSP client on port 8000
+20:30:25.594280 [info ]: Successfully connected to LSP client
+20:30:25.594489 [info ]: Creating LSP service...
+20:30:25.604524 [info ]: Creating LSP server...
+20:30:25.604541 [info ]: Starting LSP server...
+==================== 2026-11-26T20:30:38.991438Z | 82d67a3b-b0d5-443b-91ef-1401a2047cf4 ====================
+20:30:38.992635 [info ]: Started loading project
+20:30:38.997672 [info ]: Finished loading project [  0.01s]
+20:30:38.998741 [error]: [InvalidConfig (dbt1005)]: No profile specified in dbt_project.yml
+20:30:38.999422 [info ]: 
+==================== Execution Summary =====================
+Finished 'compile' with 1 error [7ms]
+==================== 2026-11-26T20:32:03.743661Z | 689105a1-af09-48bc-b8d7-9a0c0773d675 ====================
+20:32:03.743716 [info ]: Started loading project
+20:32:03.753311 [info ]: Loading profiles.yml
+20:32:03.755526 [info ]: Finished loading project [  0.01s]
+20:32:03.756027 [error]: [IoError (dbt1001)]: Profile 'snowflake_dbt' not found in profiles.yml
+  --> dbt_project.yml:5:10
+20:32:03.756176 [info ]: 
+==================== Execution Summary =====================
+Finished 'compile' with 1 error [12ms]
+20:32:05.167161 [info ]: Loading profiles.yml
+20:32:06.202002 [info ]: Loading profiles.yml
+==================== 2026-11-26T20:32:20.030997Z | 4f5114e1-144a-47ce-ac62-c8612ba907d5 ====================
+20:32:20.031071 [info ]: Started loading project
+20:32:20.033186 [info ]: Loading profiles.yml
+20:32:20.039162 [info ]: Finished loading project [  0.01s]
+20:32:20.039154 [error]: [InvalidConfig (dbt1005)]: Jinja render error: invalid operation: 'env_var': environment variable 'SNOWFLAKE_ACCOUNT' not found
+(in :1:1)
+20:32:20.039199 [info ]: 
+==================== Execution Summary =====================
+Finished 'compile' with 1 error [8ms]
+20:32:21.338783 [info ]: Loading profiles.yml
+20:32:43.743934 [info ]: Loading profiles.yml
+20:32:45.200676 [info ]: Loading profiles.yml
+20:32:59.559383 [info ]: Loading profiles.yml
+20:34:24.877721 [info ]: Loading profiles.yml
+20:34:31.232909 [info ]: Loading profiles.yml
+20:34:32.257167 [info ]: Loading profiles.yml
+20:34:40.505970 [info ]: Loading profiles.yml
+20:34:42.444733 [info ]: Loading profiles.yml
+20:34:43.461720 [info ]: Loading profiles.yml
+20:37:17.900408 [info ]: Loading profiles.yml
+20:37:19.041166 [info ]: Loading profiles.yml
+20:37:20.162001 [info ]: Loading profiles.yml
+20:37:21.316622 [info ]: Loading profiles.yml
+20:37:25.337871 [info ]: Loading profiles.yml
+20:37:25.652852 [info ]: Loading profiles.yml
+20:37:26.450584 [info ]: Loading profiles.yml
+20:37:38.553812 [info ]: Loading profiles.yml
+==================== 2026-11-26T20:37:54.598050Z | 157299c8-7c76-4cba-981f-e50c9c3e5b39 ====================
+20:37:54.598133 [info ]: Started loading project
+20:37:54.601562 [info ]: Loading profiles.yml
+20:37:54.603804 [info ]: Finished loading project [  0.01s]
+20:37:54.603793 [error]: [InvalidConfig (dbt1005)]: Jinja render error: invalid operation: 'env_var': environment variable 'SNOWFLAKE_ACCOUNT' not found
+(in :1:1)
+20:37:54.603847 [info ]: 
+==================== Execution Summary =====================
+Finished 'compile' with 1 error [5ms]
+20:37:56.040252 [info ]: Loading profiles.yml
+20:38:00.402217 [info ]: Loading profiles.yml
+==================== 2026-11-26T20:38:06.040120Z | 7956c357-e36a-436e-9e8d-2fd062dfca44 ====================
+20:38:06.040195 [info ]: Started loading project
+20:38:06.041806 [info ]: Loading profiles.yml
+20:38:06.044026 [error]: [InvalidConfig (dbt1005)]: Jinja render error: invalid operation: 'env_var': environment variable 'SNOWFLAKE_ACCOUNT' not found
+(in :1:1)
+20:38:06.044048 [info ]: Finished loading project [  0.00s]
+20:38:06.044074 [info ]: 
+==================== Execution Summary =====================
+Finished 'compile' with 1 error [3ms]
+20:38:09.766768 [info ]: Loading profiles.yml
+20:38:12.105941 [info ]: Loading profiles.yml
+20:38:17.594835 [info ]: Loading profiles.yml
+20:38:20.190210 [info ]: Loading profiles.yml
+20:38:31.993370 [info ]: Loading profiles.yml
+20:38:33.019836 [info ]: Loading profiles.yml
+20:38:40.308151 [info ]: Loading profiles.yml
+20:38:41.331673 [info ]: Loading profiles.yml
+20:38:50.327163 [info ]: Loading profiles.yml
+20:38:51.126007 [info ]: Loading profiles.yml
+20:38:54.032711 [info ]: Loading profiles.yml
+20:38:55.215329 [info ]: Loading profiles.yml
+20:39:02.319022 [info ]: Loading profiles.yml
+20:39:03.361447 [info ]: Loading profiles.yml
+==================== 2026-11-26T20:41:51.453012Z | 7da34e31-56dd-41c7-a65f-974f19f0bed5 ====================
+20:41:51.453077 [info ]: Started loading project
+20:41:51.457326 [info ]: Loading profiles.yml
+20:41:51.462490 [info ]: Finished loading project [  0.01s]
+20:41:51.463064 [error]: [SerializationError (dbt1013)]: YAML error: did not find expected key at line 27 column 52, while parsing a block mapping at line 17 column 7
+  --> profiles.yml:27:52
+20:41:51.463253 [info ]: 
+==================== Execution Summary =====================
+Finished 'compile' with 1 error [10ms]
+20:41:52.885606 [info ]: Loading profiles.yml
+==================== 2026-11-26T20:41:53.999605Z | 7c5ad29b-8e79-48d9-a167-65852ade90d1 ====================
+20:41:53.999662 [info ]: Started loading project
+20:41:54.001125 [info ]: Loading profiles.yml
+20:41:54.006503 [error]: [InvalidConfig (dbt1005)]: Jinja render error: invalid operation: 'env_var': environment variable 'SNOWFLAKE_ACCOUNT' not found
+(in :1:1)
+20:41:54.006520 [info ]: Finished loading project [  0.01s]
+20:41:54.006551 [info ]: 
+==================== Execution Summary =====================
+Finished 'compile' with 1 error [6ms]
+20:41:54.971806 [info ]: Loading profiles.yml
+==================== 2026-11-26T20:41:55.452643Z | 78501960-332b-48f4-9121-7a42e2865562 ====================
+20:41:55.452699 [info ]: Started loading project
+20:41:55.454930 [info ]: Loading profiles.yml
+20:41:55.457321 [error]: [InvalidConfig (dbt1005)]: Jinja render error: invalid operation: 'env_var': environment variable 'SNOWFLAKE_ACCOUNT' not found
+(in :1:1)
+20:41:55.457352 [info ]: Finished loading project [  0.00s]
+20:41:55.457363 [info ]: 
+==================== Execution Summary =====================
+Finished 'compile' with 1 error [4ms]
+20:41:56.057025 [info ]: Loading profiles.yml
+20:42:04.871981 [info ]: Loading profiles.yml
+20:42:05.239494 [info ]: Loading profiles.yml
+20:42:06.396644 [info ]: Loading profiles.yml
+20:42:07.939166 [info ]: Loading profiles.yml
+20:42:08.950532 [info ]: Loading profiles.yml
+20:49:30.903805 [info ]: Loading profiles.yml
+20:49:32.026114 [info ]: Loading profiles.yml
