@@ -37,24 +37,44 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+
       - uses: snowflakedb/snowflake-actions@v3
         with:
           use-oidc: true
           cli-version: "3.16"
+
       - run: pip install "schemachange>=4.0,<5.0"
+
       - name: Clone Prod Databases for Isolated PR Validation
         run: |
           snow sql -x -q "
             CREATE OR REPLACE TRANSIENT DATABASE ${TARGET_RAW_DB} CLONE RAW_PROD;
             CREATE OR REPLACE TRANSIENT DATABASE ${CHANGE_HISTORY_DB} CLONE METADATA_DB;
           "
+
+      - name: Create connections.toml for schemachange
+        run: |
+          mkdir -p ~/.snowflake
+          cat <<EOF > ~/.snowflake/connections.toml
+          [default]
+          account = "${SNOWFLAKE_ACCOUNT}"
+          user = "${SNOWFLAKE_USER}"
+          role = "${SNOWFLAKE_ROLE}"
+          warehouse = "${SNOWFLAKE_WAREHOUSE}"
+          authenticator = "WORKLOAD_IDENTITY"
+          workload_identity_provider = "OIDC"
+          token = "${SNOWFLAKE_TOKEN}"
+          EOF
+          chmod 600 ~/.snowflake/connections.toml
+
       - name: Run schemachange against PR Clone
         run: |
-          schemachange deploy \
-            --config-folder snowflake \
-            --connections-file-path ~/.snowflake/connections.toml \
-            --connection-name default \
-            --verbose
+          env -u SNOWFLAKE_AUTHENTICATOR -u SNOWFLAKE_TOKEN \
+            schemachange deploy \
+              --config-folder snowflake \
+              --connections-file-path ~/.snowflake/connections.toml \
+              --connection-name default \
+              -L INFO
 
   ci-cleanup:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -70,6 +90,7 @@ jobs:
         with:
           use-oidc: true
           cli-version: "3.16"
+
       - name: Drop Ephemeral PR Clones
         run: |
           snow sql -x -q "
@@ -92,15 +113,34 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+
       - uses: snowflakedb/snowflake-actions@v3
         with:
           use-oidc: true
           cli-version: "3.16"
+
       - run: pip install "schemachange>=4.0,<5.0"
+
+      - name: Create connections.toml for schemachange
+        run: |
+          mkdir -p ~/.snowflake
+          cat <<EOF > ~/.snowflake/connections.toml
+          [default]
+          account = "${SNOWFLAKE_ACCOUNT}"
+          user = "${SNOWFLAKE_USER}"
+          role = "${SNOWFLAKE_ROLE}"
+          warehouse = "${SNOWFLAKE_WAREHOUSE}"
+          authenticator = "WORKLOAD_IDENTITY"
+          workload_identity_provider = "OIDC"
+          token = "${SNOWFLAKE_TOKEN}"
+          EOF
+          chmod 600 ~/.snowflake/connections.toml
+
       - name: Deploy Migrations to Production
         run: |
-          schemachange deploy \
-            --config-folder snowflake \
-            --connections-file-path ~/.snowflake/connections.toml \
-            --connection-name default \
-            --verbose
+          env -u SNOWFLAKE_AUTHENTICATOR -u SNOWFLAKE_TOKEN \
+            schemachange deploy \
+              --config-folder snowflake \
+              --connections-file-path ~/.snowflake/connections.toml \
+              --connection-name default \
+              -L INFO
