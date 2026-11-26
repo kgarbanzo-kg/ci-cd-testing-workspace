@@ -3,7 +3,7 @@ name: Snowflake Object CI/CD
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - 'snowflake/**'
       - '.github/workflows/snowflake-cicd.yml'
@@ -52,9 +52,11 @@ jobs:
             CREATE OR REPLACE TRANSIENT DATABASE ${CHANGE_HISTORY_DB} CLONE METADATA_DB;
           "
 
-      - name: Create connections.toml for schemachange
+      - name: Create OIDC token file and connections.toml
         run: |
           mkdir -p ~/.snowflake
+          printf "%s" "${SNOWFLAKE_TOKEN}" > ~/.snowflake/oidc_token.txt
+          chmod 600 ~/.snowflake/oidc_token.txt
           cat <<EOF > ~/.snowflake/connections.toml
           [default]
           account = "${SNOWFLAKE_ACCOUNT}"
@@ -62,19 +64,17 @@ jobs:
           role = "${SNOWFLAKE_ROLE}"
           warehouse = "${SNOWFLAKE_WAREHOUSE}"
           authenticator = "WORKLOAD_IDENTITY"
-          workload_identity_provider = "OIDC"
-          token = "${SNOWFLAKE_TOKEN}"
+          token_file_path = "/home/runner/.snowflake/oidc_token.txt"
           EOF
           chmod 600 ~/.snowflake/connections.toml
 
       - name: Run schemachange against PR Clone
         run: |
-          env -u SNOWFLAKE_AUTHENTICATOR -u SNOWFLAKE_TOKEN \
-            schemachange deploy \
-              --config-folder snowflake \
-              --connections-file-path ~/.snowflake/connections.toml \
-              --connection-name default \
-              -L INFO
+          schemachange deploy \
+            --config-folder snowflake \
+            --connections-file-path ~/.snowflake/connections.toml \
+            --connection-name default \
+            -L INFO
 
   ci-cleanup:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -121,9 +121,11 @@ jobs:
 
       - run: pip install "schemachange>=4.0,<5.0"
 
-      - name: Create connections.toml for schemachange
+      - name: Create OIDC token file and connections.toml
         run: |
           mkdir -p ~/.snowflake
+          printf "%s" "${SNOWFLAKE_TOKEN}" > ~/.snowflake/oidc_token.txt
+          chmod 600 ~/.snowflake/oidc_token.txt
           cat <<EOF > ~/.snowflake/connections.toml
           [default]
           account = "${SNOWFLAKE_ACCOUNT}"
@@ -131,16 +133,14 @@ jobs:
           role = "${SNOWFLAKE_ROLE}"
           warehouse = "${SNOWFLAKE_WAREHOUSE}"
           authenticator = "WORKLOAD_IDENTITY"
-          workload_identity_provider = "OIDC"
-          token = "${SNOWFLAKE_TOKEN}"
+          token_file_path = "/home/runner/.snowflake/oidc_token.txt"
           EOF
           chmod 600 ~/.snowflake/connections.toml
 
       - name: Deploy Migrations to Production
         run: |
-          env -u SNOWFLAKE_AUTHENTICATOR -u SNOWFLAKE_TOKEN \
-            schemachange deploy \
-              --config-folder snowflake \
-              --connections-file-path ~/.snowflake/connections.toml \
-              --connection-name default \
-              -L INFO
+          schemachange deploy \
+            --config-folder snowflake \
+            --connections-file-path ~/.snowflake/connections.toml \
+            --connection-name default \
+            -L INFO
