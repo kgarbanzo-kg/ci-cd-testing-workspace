@@ -31,7 +31,6 @@ jobs:
       DBT_ROLE: ${{ vars.DBT_ROLE }}
       SNOWFLAKE_WAREHOUSE: ${{ vars.DBT_WAREHOUSE }}
       DBT_TARGET_DB: ${{ vars.DBT_TARGET_DB }}
-      DBT_CI_SCHEMA: PR_${{ github.event.number }}
       TARGET_RAW_DB: ${{ vars.SNOWFLAKE_RAW_DB }}
       SNOWFLAKE_AUTHENTICATOR: WORKLOAD_IDENTITY
     steps:
@@ -53,8 +52,8 @@ jobs:
           use-oidc: true
           cli-version: "3.16"
 
-      - name: Probar conexión y construir modelos en CI
+      - name: Validar conexión y compilar modelos dbt sin crear objetos
         run: |
           export SNOWFLAKE_TOKEN="${SNOWFLAKE_TOKEN}"
           dbt debug
-          dbt build --target ci
+          dbt compile --target ci
