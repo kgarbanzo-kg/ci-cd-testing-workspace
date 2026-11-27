@@ -1,28 +1,27 @@
-name: dbt CI
+name: dbt CD
 
 on:
-  pull_request:
+  push:
     branches: [main]
-    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - 'dbt/**'
-      - '.github/workflows/dbt-ci.yml'
+      - '.github/workflows/dbt-cd.yml'
 
 concurrency:
-  group: dbt-ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: dbt-cd-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
   id-token: write
 
 jobs:
-  validate-ci:
+  deploy-prod:
     runs-on: ubuntu-latest
-    environment: ci
+    environment: prod
     env:
       SNOWFLAKE_ACCOUNT: ${{ vars.SNOWFLAKE_ACCOUNT }}
-      SNOWFLAKE_USER: SVC_GITHUB_INFRA_CI
+      SNOWFLAKE_USER: SVC_GITHUB_INFRA_PROD
       SNOWFLAKE_ROLE: ${{ vars.DBT_ROLE }}
       SNOWFLAKE_WAREHOUSE: ${{ vars.DBT_WAREHOUSE }}
       SNOWFLAKE_DATABASE: ${{ vars.DBT_TARGET_DB }}
@@ -31,33 +30,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Preparar profiles.yml para Snowflake Native dbt
-        run: cp ./dbt/dbt_project_profiles.yml ./dbt/profiles.yml
-
       - name: Instalar Snowflake CLI con OIDC
         uses: snowflakedb/snowflake-actions@v3
         with:
           use-oidc: true
           cli-version: "3.16"
 
+      - name: Preparar profiles.yml para Snowflake Native dbt
+        run: cp ./dbt/dbt_project_profiles.yml ./dbt/profiles.yml
+
       - name: Probar conexión OIDC
         run: snow connection test -x
 
-      - name: Desplegar objeto DBT PROJECT temporal del PR
+      - name: Desplegar objeto DBT PROJECT de producción
         run: |
-          snow dbt deploy poc_dbt_project_pr_${{ github.event.number }} \
+          snow dbt deploy poc_dbt_project_prod \
             --source ./dbt \
             --profiles-dir ./dbt \
             --dbt-version '2.0.0' \
             -x
 
-      - name: Compilar proyecto en Snowflake (sin crear tablas extra)
+      - name: Construir modelos y tests en producción
         run: |
           snow dbt execute -x \
-            poc_dbt_project_pr_${{ github.event.number }} \
-            compile --target dev
-
-      - name: Limpiar objeto DBT PROJECT temporal del PR
-        if: always()
-        run: |
-          snow sql -x -q "DROP DBT PROJECT IF EXISTS ${SNOWFLAKE_DATABASE}.${SNOWFLAKE_SCHEMA}.poc_dbt_project_pr_${{ github.event.number }}"
+            poc_dbt_project_prod \
+            build --target prod
