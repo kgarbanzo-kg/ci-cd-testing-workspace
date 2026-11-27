@@ -1,0 +1,57 @@
+name: dbt CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dbt/**'
+      - '.github/workflows/dbt-cd.yml'
+
+concurrency:
+  group: dbt-cd-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy-prod:
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ vars.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: SVC_GITHUB_INFRA_PROD
+      SNOWFLAKE_ROLE: ${{ vars.DBT_ROLE }}
+      SNOWFLAKE_WAREHOUSE: ${{ vars.DBT_WAREHOUSE }}
+      SNOWFLAKE_DATABASE: ${{ vars.DBT_TARGET_DB }}
+      SNOWFLAKE_SCHEMA: DBT_PROJECTS
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Preparar profiles.yml para Snowflake Native dbt
+        run: cp ./dbt/dbt_project_profiles.yml ./dbt/profiles.yml
+
+      - name: Instalar Snowflake CLI con OIDC
+        uses: snowflakedb/snowflake-actions@v3
+        with:
+          use-oidc: true
+          cli-version: "3.16"
+
+      - name: Probar conexión OIDC
+        run: snow connection test -x
+
+      - name: Desplegar objeto DBT PROJECT de producción
+        run: |
+          snow dbt deploy poc_dbt_project_prod \
+            --source ./dbt \
+            --profiles-dir ./dbt \
+            --dbt-version '2.0.0' \
+            -x
+
+      - name: Construir modelos y tests en producción
+        run: |
+          snow dbt execute -x \
+            poc_dbt_project_prod \
+            build --target prod

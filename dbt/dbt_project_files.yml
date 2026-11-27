@@ -1,0 +1,17 @@
+snowflake_dbt_poc:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      database: "{{ env_var('DBT_DATABASE', 'ANALYTICS_DB') }}"
+      warehouse: CICD_WH
+      schema: STAGING
+      role: CICD_DBT_ROLE
+      threads: 4
+    prod:
+      type: snowflake
+      database: ANALYTICS_DB
+      warehouse: CICD_WH
+      schema: STAGING
+      role: CICD_DBT_ROLE
+      threads: 4
