@@ -2,11 +2,20 @@ name: 'snowflake_dbt_poc'
 version: '1.0.0'
 config-version: 2
 
-profile: 'snowflake_dbt'
+profile: 'snowflake_dbt_poc'
 model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
 clean-targets: ["target", "dbt_packages"]
 
 models:
   snowflake_dbt_poc:
     staging:
+      +schema: STAGING
       +materialized: view
+    intermediate:
+      +schema: INTERMEDIATE
+      +materialized: view
+    marts:
+      +schema: MARTS
+      +materialized: table
