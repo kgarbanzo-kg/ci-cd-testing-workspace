@@ -31,14 +31,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Preparar profiles.yml para Snowflake Native dbt
-        run: cp ./dbt/dbt_project_profiles.yml ./dbt/profiles.yml
-
       - name: Instalar Snowflake CLI con OIDC
         uses: snowflakedb/snowflake-actions@v3
         with:
           use-oidc: true
           cli-version: "3.16"
+
+      - name: Preparar profiles.yml para Snowflake Native dbt
+        run: cp ./dbt/dbt_project_profiles.yml ./dbt/profiles.yml
 
       - name: Probar conexión OIDC
         run: snow connection test -x
@@ -60,4 +60,6 @@ jobs:
       - name: Limpiar objeto DBT PROJECT temporal del PR
         if: always()
         run: |
-          snow sql -x -q "DROP DBT PROJECT IF EXISTS ${SNOWFLAKE_DATABASE}.${SNOWFLAKE_SCHEMA}.poc_dbt_project_pr_${{ github.event.number }}"
+          if command -v snow >/dev/null 2>&1; then
+            snow sql -x -q "DROP DBT PROJECT IF EXISTS ${SNOWFLAKE_DATABASE}.${SNOWFLAKE_SCHEMA}.poc_dbt_project_pr_${{ github.event.number }}"
+          fi
