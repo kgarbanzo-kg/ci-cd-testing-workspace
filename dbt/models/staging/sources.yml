@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: raw_ingestion
+    database: "{{ env_var('TARGET_RAW_DB', 'RAW_PROD') }}"
+    schema: INGESTION
+    tables:
+      - name: orders_raw
+        identifier: ORDERS_RAW
